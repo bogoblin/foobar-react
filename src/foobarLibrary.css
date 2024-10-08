@@ -27,6 +27,22 @@
     display: none;
 }
 
+.album-details ul {
+    padding: 0;
+    backdrop-filter: blur(200px);
+    height: 200px;
+    display: grid;
+    grid-auto-flow: column;
+    grid-template-rows: repeat(auto-fill, 2em);
+    width: auto;
+    overflow-x: scroll;
+}
+.album-details li {
+    color: rgba(0,0,0,70%);
+    text-shadow: rgba(100%,100%,100%,80%) 2px 2px 0;
+    text-wrap: nowrap;
+}
+
 .album-details.open {
     animation: expand-album-details 0.3s ease-in-out forwards;
     height: 200px;

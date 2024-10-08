@@ -47,6 +47,10 @@ class Track {
     artUrl() {
         return `http://localhost:8880/api/artwork/${this.playlistId}/${this.index}`;
     }
+
+    trackNumber() {
+        return this.columns['%track number%'];
+    }
 }
 
 class Album {
@@ -100,7 +104,7 @@ class Library {
     }
 
     columns(): Array<string> {
-        return ['%title%', '%artist%', '%album artist%', '%album%'];
+        return ['%title%', '%artist%', '%album artist%', '%album%', '%track number%'];
     }
 }
 
@@ -158,15 +162,17 @@ export function FoobarLibrary({playlistId}: {playlistId: string}) {
 function FoobarAlbum({album, openAlbumId, toggleOpen, closingAlbumId}: {album: Album, openAlbumId: AlbumId|null, toggleOpen: (albumId: AlbumId|null) => void, closingAlbumId: AlbumId|null}) {
     const albumId = album.albumId();
     return <><li key={album.albumId()} onClick={() => toggleOpen(albumId)}>
-        <img src={album.artUrl()}/>
+        <img crossOrigin={"anonymous"} src={album.artUrl()}/>
         <h2>{album.name()}</h2>
     </li><FoobarAlbumDetails album={album} open={albumId === openAlbumId} closing={albumId === closingAlbumId}/></>
 }
 
 function FoobarAlbumDetails({album, open, closing}: {album: Album, open: boolean, closing: boolean}) {
-    return <div className={"album-details " + (open?'open':'') + (closing?'closing':'')}>
+    return <div className={"album-details " + (open?'open':'') + (closing?'closing':'')}
+                style = {{backgroundImage: `url(${album.artUrl()})`}}
+    >
         <ul>
-        {album.tracks().map(track => <li>{track.title()}</li>)}
+        {album.tracks().map(track => <li>{track.trackNumber()}. {track.title()}</li>)}
         </ul>
     </div>
 }
