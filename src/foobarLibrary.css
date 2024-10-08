@@ -38,8 +38,6 @@
     overflow-x: scroll;
 }
 .album-details li {
-    color: rgba(0,0,0,70%);
-    text-shadow: rgba(100%,100%,100%,80%) 2px 2px 0;
     text-wrap: nowrap;
 }
 
