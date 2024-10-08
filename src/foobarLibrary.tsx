@@ -1,15 +1,13 @@
 import {useEffect, useState} from "react";
 import './foobarLibrary.css';
 import fontColorContrast from "font-color-contrast";
-import {play, UpdateEventSource} from "./beefweb.ts";
+import {play} from "./beefweb.ts";
 
 interface BeefwebItem {
     columns: Array<string>
 }
 
 type AlbumId = string;
-
-const stream = new UpdateEventSource();
 
 export class Track {
     get index(): number | null {

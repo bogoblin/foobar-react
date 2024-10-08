@@ -4,10 +4,10 @@
 
 .library {
     display: grid;
-    width: 100%;
     grid-auto-flow: row dense;
     grid-template-columns: repeat(auto-fit, 200px);
     column-gap: 10px;
+    overflow-y: scroll;
 }
 
 .library li {
