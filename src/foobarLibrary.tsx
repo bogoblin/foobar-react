@@ -1,6 +1,7 @@
 import {useEffect, useState} from "react";
 import './foobarLibrary.css';
 import fontColorContrast from "font-color-contrast";
+import {play} from "./beefweb.ts";
 
 interface BeefwebItem {
     columns: Array<string>
@@ -8,7 +9,7 @@ interface BeefwebItem {
 
 type AlbumId = string;
 
-class Track {
+export class Track {
     get index(): number | null {
         return this._index || 0;
     }
@@ -219,7 +220,12 @@ function FoobarAlbumDetails({album, open, closing}: {album: Album, open: boolean
     }}
     >
         <ul>
-        {album.tracks().map(track => <li>{track.trackNumber()}. {track.title()}</li>)}
+        {album.tracks().map(track => <li
+            key={track.index}
+            onClick={() => {
+                play(track).then(console.log);
+            }}
+        >{track.trackNumber()}. {track.title()}</li>)}
         </ul>
     </div>
 }
