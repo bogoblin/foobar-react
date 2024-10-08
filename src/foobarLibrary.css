@@ -7,6 +7,7 @@
     width: 100%;
     grid-auto-flow: row dense;
     grid-template-columns: repeat(auto-fit, 200px);
+    column-gap: 10px;
 }
 
 .library li {
@@ -33,7 +34,9 @@
     height: 200px;
     display: grid;
     grid-auto-flow: column;
-    grid-template-rows: repeat(auto-fill, 2em);
+    grid-template-rows: repeat(auto-fill, 1.5em);
+    grid-template-columns: repeat(10, auto);
+    column-gap: 4px;
     width: auto;
     overflow-x: scroll;
 }
