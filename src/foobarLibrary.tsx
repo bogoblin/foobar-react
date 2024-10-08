@@ -1,4 +1,5 @@
 import {useEffect, useState} from "react";
+import './foobarLibrary.css';
 
 interface BeefwebItem {
     columns: Array<string>
@@ -8,7 +9,7 @@ type AlbumId = string;
 
 class Track {
     get index(): number | null {
-        return this._index;
+        return this._index || 0;
     }
     private _index: number | null;
     private playlistId: string;
@@ -49,26 +50,30 @@ class Track {
 }
 
 class Album {
-    private tracks: Array<Track>;
+    private _tracks: Array<Track>;
 
     constructor() {
-        this.tracks = [];
+        this._tracks = [];
     }
 
     addTrack(track: Track) {
-        this.tracks.push(track);
+        this._tracks.push(track);
     }
 
     name() {
-        return this.tracks[0].album();
+        return this._tracks[0].album();
     }
 
     artUrl() {
-        return this.tracks[0].artUrl();
+        return this._tracks[0].artUrl();
     }
 
     albumId() {
-        return this.tracks[0].albumId();
+        return this._tracks[0].albumId();
+    }
+
+    tracks() {
+        return this._tracks;
     }
 }
 
@@ -129,18 +134,39 @@ export function FoobarLibrary({playlistId}: {playlistId: string}) {
             .then(library => setLibrary(library))
     }, [playlistId])
 
+    const [openAlbumId, setOpenAlbumId] = useState<AlbumId | null>(null);
+    const [closingAlbumId, setClosingAlbumId] = useState<AlbumId | null>(null);
+
+    function toggleOpen(albumId: AlbumId|null) {
+        setClosingAlbumId(openAlbumId);
+        if (openAlbumId === albumId) {
+            setOpenAlbumId(null);
+        } else {
+            setOpenAlbumId(albumId);
+        }
+    }
+
     if (library) {
-        return <ul>
-            {Object.values(library.albums).map(album => FoobarAlbum({album}))}
+        return <ul className={"library"}>
+            {Object.values(library.albums).map(album => FoobarAlbum({album, openAlbumId, toggleOpen, closingAlbumId}))}
         </ul>
     } else {
         return <span>Loading...</span>
     }
 }
 
-function FoobarAlbum({album}: {album: Album}) {
-    return <li key={album.albumId()}>
+function FoobarAlbum({album, openAlbumId, toggleOpen, closingAlbumId}: {album: Album, openAlbumId: AlbumId|null, toggleOpen: (albumId: AlbumId|null) => void, closingAlbumId: AlbumId|null}) {
+    const albumId = album.albumId();
+    return <><li key={album.albumId()} onClick={() => toggleOpen(albumId)}>
         <img src={album.artUrl()}/>
         <h2>{album.name()}</h2>
-    </li>
+    </li><FoobarAlbumDetails album={album} open={albumId === openAlbumId} closing={albumId === closingAlbumId}/></>
+}
+
+function FoobarAlbumDetails({album, open, closing}: {album: Album, open: boolean, closing: boolean}) {
+    return <div className={"album-details " + (open?'open':'') + (closing?'closing':'')}>
+        <ul>
+        {album.tracks().map(track => <li>{track.title()}</li>)}
+        </ul>
+    </div>
 }
