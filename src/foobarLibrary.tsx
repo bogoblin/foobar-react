@@ -11,10 +11,12 @@ class Track {
         return this._index;
     }
     private _index: number | null;
+    private playlistId: string;
     private readonly columns: Record<string, string>;
 
-    constructor(item: BeefwebItem, columns: Array<string>) {
+    constructor(playlistId: string, item: BeefwebItem, columns: Array<string>) {
         this._index = null;
+        this.playlistId = playlistId;
         this.columns = {};
         for (let i=0; i<columns.length; i++) {
             this.columns[columns[i]] = item.columns[i];
@@ -40,6 +42,10 @@ class Track {
     albumArtist() {
         return this.columns['%album artist%'];
     }
+
+    artUrl() {
+        return `http://localhost:8880/api/artwork/${this.playlistId}/${this.index}`;
+    }
 }
 
 class Album {
@@ -56,24 +62,32 @@ class Album {
     name() {
         return this.tracks[0].album();
     }
+
+    artUrl() {
+        return this.tracks[0].artUrl();
+    }
+
+    albumId() {
+        return this.tracks[0].albumId();
+    }
 }
 
 class Library {
     public tracks: Array<Track>;
-    public albums: Map<AlbumId, Album>;
+    public albums: Record<AlbumId, Album>;
 
     constructor() {
         this.tracks = [];
-        this.albums = new Map();
+        this.albums = {};
     }
 
     addTrack(track: Track) {
         const index = this.tracks.length;
         track.setIndex(index);
         this.tracks.push(track);
-        const album = this.albums.get(track.albumId()) || new Album();
+        const album = this.albums[track.albumId()] || new Album();
         album.addTrack(track);
-        this.albums.set(track.albumId(), album);
+        this.albums[track.albumId()] = album;
     }
     
     totalCount(): number {
@@ -100,7 +114,7 @@ async function fetchLibrary(playlistId: string) {
     const response = await (await fetch(url)).json();
 
     for (const item of response['playlistItems']['items']) {
-        const track = new Track(item, columns);
+        const track = new Track(playlistId, item, columns);
         library.addTrack(track);
     }
 
@@ -116,8 +130,17 @@ export function FoobarLibrary({playlistId}: {playlistId: string}) {
     }, [playlistId])
 
     if (library) {
-        return <span>Songs: {library.totalCount()}, Albums: {library.albums.size}</span>
+        return <ul>
+            {Object.values(library.albums).map(album => FoobarAlbum({album}))}
+        </ul>
     } else {
         return <span>Loading...</span>
     }
+}
+
+function FoobarAlbum({album}: {album: Album}) {
+    return <li key={album.albumId()}>
+        <img src={album.artUrl()}/>
+        <h2>{album.name()}</h2>
+    </li>
 }
