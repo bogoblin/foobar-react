@@ -56,6 +56,15 @@
     display: block;
 }
 
+.album-title {
+    font-weight: bold;
+}
+.album-artist {
+    font-style: italic;
+    opacity: 70%;
+    margin-bottom: 4px;
+}
+
 @keyframes expand-album-details {
     0% {
         height: 0;

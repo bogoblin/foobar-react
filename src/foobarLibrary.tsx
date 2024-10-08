@@ -86,6 +86,10 @@ class Album {
         return this._tracks[0].album();
     }
 
+    artist() {
+        return this._tracks[0].albumArtist();
+    }
+
     artUrl() {
         return this._tracks[0].artUrl();
     }
@@ -183,14 +187,17 @@ export function FoobarLibrary({playlistId}: {playlistId: string}) {
 
 function FoobarAlbum({album, openAlbumId, toggleOpen, closingAlbumId}: {album: Album, openAlbumId: AlbumId|null, toggleOpen: (albumId: AlbumId|null) => void, closingAlbumId: AlbumId|null}) {
     const albumId = album.albumId();
-    return <><li key={album.albumId()} onClick={() => toggleOpen(albumId)}>
-        <img crossOrigin={"anonymous"} src={album.artUrl()} onLoad={(e) => {
-            if (album.bgColor[0] === 0) {
-                album.bgColor = albumColors(e.currentTarget);
-            }
-        }}/>
-        <h2>{album.name()}</h2>
-    </li><FoobarAlbumDetails album={album} open={albumId === openAlbumId} closing={albumId === closingAlbumId}/></>
+    return <>
+        <li key={album.albumId()} onClick={() => toggleOpen(albumId)}>
+            <img crossOrigin={"anonymous"} src={album.artUrl()} onLoad={(e) => {
+                if (album.bgColor[0] === 0) {
+                    album.bgColor = albumColors(e.currentTarget);
+                }
+            }}/>
+            <div className={"album-title"}>{album.name()}</div>
+            <div className={"album-artist"}>{album.artist()}</div>
+        </li>
+        <FoobarAlbumDetails album={album} open={albumId === openAlbumId} closing={albumId === closingAlbumId}/></>
 }
 
 function albumColors(element: HTMLImageElement): [number, number, number] {
