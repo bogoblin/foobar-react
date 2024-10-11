@@ -1,4 +1,4 @@
-import {Track} from "./foobarLibrary.tsx";
+import {LibraryColumns, Track} from "./foobarLibrary.tsx";
 import createFetchClient from "openapi-fetch";
 import createClient from "openapi-react-query";
 import {components, paths} from "./beefwebSchema";
@@ -33,9 +33,15 @@ export function playerTimeFromMilliseconds(milliseconds: number) {
 export class PlayerState {
     public playerState: components["schemas"]["PlayerState"];
     private createdAt: DOMHighResTimeStamp;
+    public currentTrack: Track | null;
 
     constructor(playerState: components["schemas"]["PlayerState"]) {
         this.playerState = playerState;
+        if (playerState.activeItem) {
+            this.currentTrack = new Track("p2", playerState.activeItem.columns || []);
+        } else {
+            this.currentTrack = null;
+        }
         this.createdAt = performance.now();
     }
 
@@ -77,7 +83,16 @@ export class UpdateEventSource {
     public playerState: PlayerState | undefined;
 
     constructor() {
-        const es = new EventSource('http://localhost:8880/api/query/updates?player=true&trcolumns=%25artist%25%20-%20%25title%25%2C%25artist%25%20-%20%25album%25%20-%20%25title%25&playlists=true&playlistItems=true&plref=p2&plcolumns=%25artist%25%2C%25album%25%2C%25track%25%2C%25title%25%2C%25length%25&plrange=0%3A100000')
+        const params = new URLSearchParams({
+            player: "true",
+            trcolumns: LibraryColumns.join(','),
+            playlists: "true",
+            playlistItems: "true",
+            plref: "p2",
+            plrange: "0:100000",
+            plcolumns: LibraryColumns.join(','),
+        }).toString();
+        const es = new EventSource(`http://localhost:8880/api/query/updates?${params}`);
         es.onmessage = (e) => {
             const data = JSON.parse(e.data);
             const player = data["player"] as components["schemas"]["PlayerState"];

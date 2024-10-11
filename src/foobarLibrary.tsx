@@ -8,20 +8,14 @@ type AlbumId = string;
 
 export class Track {
     get index() {
-        return this._index || 0;
+        return this.getColumn("%list_index%");
     }
-    private _index: number | null;
     private playlistId: string;
     private readonly columns: string[];
 
     constructor(playlistId: string, columns: string[]) {
-        this._index = null;
         this.playlistId = playlistId;
         this.columns = columns;
-    }
-
-    setIndex(index: number) {
-        this._index = index;
     }
 
     getColumn(columnName: typeof LibraryColumns[number]) {
@@ -101,8 +95,6 @@ class Library {
     }
 
     addTrack(track: Track) {
-        const index = this.tracks.length;
-        track.setIndex(index);
         this.tracks.push(track);
         const album = this.albums[track.albumId()] || new Album();
         album.addTrack(track);
@@ -110,7 +102,7 @@ class Library {
     }
 }
 
-const LibraryColumns = ['%title%', '%artist%', '%album artist%', '%album%', '%track number%'] as const;
+export const LibraryColumns = ['%title%', '%artist%', '%album artist%', '%album%', '%track number%', '%path%', '%_path_raw%', '%list_index%'] as const;
 
 export function FoobarLibrary({playlistId}: {playlistId: string}) {
     // TODO: move this so it doesn't get re run all the time:

@@ -23,7 +23,11 @@ export function PlaybackControls() {
         boxShadow: "rgba(0,0,0,50%) 0 -10px 10px",
         zIndex: 1000
     }}>
-        <div style={{}}>{playerState?.activeItem?.columns?.join(' ')}</div>
+        <div style={{}}>
+            <div id={"current-title"}>{playerState?.currentTrack?.getColumn("%title%")}</div>
+            <div id={"current-artist"}>{playerState?.currentTrack?.getColumn("%artist%")}</div>
+            <div id={"current-album"}>{playerState?.currentTrack?.getColumn("%album%")}</div>
+        </div>
         <div style={{}}>
             <Playhead playerState={playerState}/>
         </div>
