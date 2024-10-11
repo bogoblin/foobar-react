@@ -1,28 +1,27 @@
-import {useEffect, useState} from "react";
+import {useState} from "react";
 import './foobarLibrary.css';
 import fontColorContrast from "font-color-contrast";
-import {play} from "./beefweb.ts";
-
-interface BeefwebItem {
-    columns: Array<string>
-}
+import {$api, play} from "./beefweb.ts";
+import {components} from "./beefwebSchema";
 
 type AlbumId = string;
 
 export class Track {
-    get index(): number | null {
+    get index() {
         return this._index || 0;
     }
     private _index: number | null;
     private playlistId: string;
     private readonly columns: Record<string, string>;
 
-    constructor(playlistId: string, item: BeefwebItem, columns: Array<string>) {
+    constructor(playlistId: string, {columns} : { columns?: string[] }) {
         this._index = null;
         this.playlistId = playlistId;
         this.columns = {};
-        for (let i=0; i<columns.length; i++) {
-            this.columns[columns[i]] = item.columns[i];
+        if (columns) {
+            for (let i = 0; i < LibraryColumns.length; i++) {
+                this.columns[LibraryColumns[i]] = columns[i];
+            }
         }
     }
 
@@ -110,10 +109,20 @@ class Album {
 class Library {
     public tracks: Array<Track>;
     public albums: Record<AlbumId, Album>;
+    public playlistId: string;
 
-    constructor() {
+    constructor(playlistId: string) {
         this.tracks = [];
         this.albums = {};
+        this.playlistId = playlistId;
+    }
+
+    addPlaylistItems(playlistItems: components["schemas"]["PlaylistItemsResult"]) {
+        console.log("building library");
+        for (const item of playlistItems['items'] || []) {
+            const track = new Track(this.playlistId, item);
+            this.addTrack(track);
+        }
     }
 
     addTrack(track: Track) {
@@ -134,36 +143,39 @@ class Library {
     }
 }
 
-async function fetchLibrary(playlistId: string) {
-    const library = new Library();
-    const columns = library.columns();
-    const params = new URLSearchParams({
-        player: 'false',
-        playlists: 'false',
-        playlistItems: 'true',
-        plref: playlistId,
-        plrange: '0:10000',
-        plcolumns: columns.join(',')
-    });
-    const url = `http://localhost:8880/api/query?${params.toString()}`;
-    const response = await (await fetch(url)).json();
-
-    for (const item of response['playlistItems']['items']) {
-        const track = new Track(playlistId, item, columns);
-        library.addTrack(track);
-    }
-
-    return library;
-}
+const LibraryColumns = ['%title%', '%artist%', '%album artist%', '%album%', '%track number%'] as const;
 
 export function FoobarLibrary({playlistId}: {playlistId: string}) {
-    const [library, setLibrary] = useState<Library | null>(null);
+    // TODO: move this so it doesn't get re run all the time:
+    const { data } = $api.useQuery(
+        "get",
+        "/query",
+        {
+            params: {
+                query: {
+                    player: false,
+                    playlists: false,
+                    playlistItems: true,
+                    plref: playlistId,
+                    plrange: '0:100000',
+                    // @ts-expect-error The API expects us to serialise the list with a comma,
+                    // but this library does it with separate query parameters
+                    plcolumns: LibraryColumns.join(',')
+                }
+            }
+        }
+    );
 
-    useEffect(() => {
-        fetchLibrary(playlistId)
-            .then(library => setLibrary(library))
-    }, [playlistId])
+    if (data?.playlistItems) {
+        const library = new Library(playlistId);
+        library.addPlaylistItems(data.playlistItems);
+        return <AlbumsView library={library}></AlbumsView>
+    } else {
+        return <AlbumsView library={null}></AlbumsView>
+    }
+}
 
+function AlbumsView({library}: {library: Library | null}) {
     const [openAlbumId, setOpenAlbumId] = useState<AlbumId | null>(null);
     const [closingAlbumId, setClosingAlbumId] = useState<AlbumId | null>(null);
 
@@ -181,14 +193,14 @@ export function FoobarLibrary({playlistId}: {playlistId: string}) {
             {Object.values(library.albums).map(album => FoobarAlbum({album, openAlbumId, toggleOpen, closingAlbumId}))}
         </ul>
     } else {
-        return <span>Loading...</span>
+        return 'Loading...';
     }
 }
 
 function FoobarAlbum({album, openAlbumId, toggleOpen, closingAlbumId}: {album: Album, openAlbumId: AlbumId|null, toggleOpen: (albumId: AlbumId|null) => void, closingAlbumId: AlbumId|null}) {
     const albumId = album.albumId();
     return <>
-        <li key={album.albumId()} onClick={() => toggleOpen(albumId)}>
+        <li key={albumId} onClick={() => toggleOpen(albumId)}>
             <img crossOrigin={"anonymous"} src={album.artUrl()} onLoad={(e) => {
                 if (album.bgColor[0] === 0) {
                     album.bgColor = albumColors(e.currentTarget);
@@ -197,7 +209,8 @@ function FoobarAlbum({album, openAlbumId, toggleOpen, closingAlbumId}: {album: A
             <div className={"album-title"}>{album.name()}</div>
             <div className={"album-artist"}>{album.artist()}</div>
         </li>
-        <FoobarAlbumDetails album={album} open={albumId === openAlbumId} closing={albumId === closingAlbumId}/></>
+        <FoobarAlbumDetails key={`${albumId}-details`} album={album} open={albumId === openAlbumId} closing={albumId === closingAlbumId}/>
+    </>;
 }
 
 function albumColors(element: HTMLImageElement): [number, number, number] {

@@ -1,4 +1,12 @@
 import {Track} from "./foobarLibrary.tsx";
+import createFetchClient from "openapi-fetch";
+import createClient from "openapi-react-query";
+import {paths} from "./beefwebSchema";
+
+const fetchClient = createFetchClient<paths>({
+    baseUrl: "http://localhost:8880/api"
+});
+export const $api = createClient(fetchClient);
 
 export async function play(track: Track) {
     const url = `http://localhost:8880/api/player/play/p2/${track.index}`;
