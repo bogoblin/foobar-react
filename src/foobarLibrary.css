@@ -5,20 +5,41 @@
 .library {
     display: grid;
     grid-auto-flow: row dense;
-    grid-template-columns: repeat(auto-fit, 200px);
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
     column-gap: 10px;
     overflow-y: scroll;
+    margin: 0;
+    padding: 0;
 }
 
-.library li {
+.library-album {
     list-style-type: none;
     content-visibility: auto;
+    padding: 10px;
+
+    img {
+        transition: filter ease-out 0.2s;
+    }
 }
 
-.library img {
+.library-album a {
+    color: inherit;
+}
+.library-album a:hover {
+    text-decoration-line: underline;
+    cursor: pointer;
+
+    img {
+        box-shadow: rgba(0,0,0,50%) 0 10px 20px;
+        filter: brightness(30%);
+    }
+}
+
+.library-album img {
     width: 100%;
-    contain: size;
-    contain-intrinsic-size: 200px 200px;
+    aspect-ratio: 1;
+    content-visibility: auto;
+    box-shadow: rgba(0,0,0,50%) 0 5px 15px;
 }
 
 .album-details {
@@ -29,7 +50,6 @@
 }
 
 .album-details ul {
-    padding: 0;
     backdrop-filter: blur(200px);
     height: 200px;
     display: grid;
@@ -60,6 +80,7 @@
     font-weight: bold;
 }
 .album-artist {
+    font-weight: normal;
     font-style: italic;
     opacity: 70%;
     margin-bottom: 4px;

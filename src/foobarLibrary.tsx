@@ -167,7 +167,8 @@ function AlbumsView({library}: {library: Library | null}) {
 function FoobarAlbum({album, openAlbumId, toggleOpen, closingAlbumId}: {album: Album, openAlbumId: AlbumId|null, toggleOpen: (albumId: AlbumId|null) => void, closingAlbumId: AlbumId|null}) {
     const albumId = album.albumId();
     return <>
-        <li key={albumId} onClick={() => toggleOpen(albumId)}>
+        <li key={albumId} className={"library-album"}>
+            <a onClick={() => toggleOpen(albumId)}>
             <img crossOrigin={"anonymous"} src={album.artUrl()} onLoad={(e) => {
                 if (album.bgColor[0] === 0) {
                     album.bgColor = albumColors(e.currentTarget);
@@ -175,8 +176,12 @@ function FoobarAlbum({album, openAlbumId, toggleOpen, closingAlbumId}: {album: A
             }}/>
             <div className={"album-title"}>{album.name()}</div>
             <div className={"album-artist"}>{album.artist()}</div>
+            </a>
         </li>
-        <FoobarAlbumDetails key={`${albumId}-details`} album={album} open={albumId === openAlbumId} closing={albumId === closingAlbumId}/>
+        {albumId === openAlbumId || albumId === closingAlbumId
+            ? <FoobarAlbumDetails key={`${albumId}-details`} album={album} open={albumId === openAlbumId} closing={albumId === closingAlbumId}/>
+            : <></>
+        }
     </>;
 }
 
