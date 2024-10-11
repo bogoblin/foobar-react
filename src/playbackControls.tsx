@@ -58,13 +58,20 @@ function Playhead({playerState}: { playerState: PlayerState | undefined }) {
     const duration = playerState
         ? playerState.duration() : playerTimeFromMilliseconds(0);
 
+    const scrub = $api.useMutation("post", "/player");
+
     if (position && duration) {
         return <form style={{display: "flex", flexDirection: "row"}}>
             <input type={"range"} id={"playhead"}
                    min={0} max={duration.milliseconds}
                    value={position.milliseconds}
                    onChange={(e) => {
-                       // todo
+                       if (playerState?.playerState.activeItem) {
+                           playerState.playerState.activeItem.position = ( parseInt(e.target.value) || 0 ) / 1000;
+                           scrub.mutate({
+                               body: playerState.playerState.activeItem
+                           });
+                       }
                        // setPosition(parseInt(e.target.value));
                    }}
             />

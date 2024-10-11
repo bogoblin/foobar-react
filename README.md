@@ -8,9 +8,10 @@ Create a file called `beefweb.config.json` in the beefweb directory (where the D
 
 ```json
 {
-	"responseHeaders": {
-		"Access-Control-Allow-Origin": "*"
-	}
+  "responseHeaders": {
+    "Access-Control-Allow-Origin": "*",
+    "Access-Control-Allow-Headers": "Content-Type"
+  }
 }
 ```
 
