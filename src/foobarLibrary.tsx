@@ -12,45 +12,28 @@ export class Track {
     }
     private _index: number | null;
     private playlistId: string;
-    private readonly columns: Record<string, string>;
+    private readonly columns: string[];
 
-    constructor(playlistId: string, {columns} : { columns?: string[] }) {
+    constructor(playlistId: string, columns: string[]) {
         this._index = null;
         this.playlistId = playlistId;
-        this.columns = {};
-        if (columns) {
-            for (let i = 0; i < LibraryColumns.length; i++) {
-                this.columns[LibraryColumns[i]] = columns[i];
-            }
-        }
+        this.columns = columns;
     }
 
     setIndex(index: number) {
         this._index = index;
     }
 
+    getColumn(columnName: typeof LibraryColumns[number]) {
+        return this.columns[LibraryColumns.indexOf(columnName)];
+    }
+
     albumId(): AlbumId {
-        return `${this.albumArtist()} - ${this.album()}`;
-    }
-
-    album() {
-        return this.columns['%album%'];
-    }
-
-    title() {
-        return this.columns['%title%']
-    }
-
-    albumArtist() {
-        return this.columns['%album artist%'];
+        return `${this.getColumn("%album artist%")} - ${this.getColumn("%album%")}`;
     }
 
     artUrl() {
         return `http://localhost:8880/api/artwork/${this.playlistId}/${this.index}`;
-    }
-
-    trackNumber() {
-        return this.columns['%track number%'];
     }
 }
 
@@ -81,25 +64,15 @@ class Album {
         this._tracks.push(track);
     }
 
-    name() {
-        return this._tracks[0].album();
-    }
+    name() {return this._tracks[0].getColumn("%album%");}
 
-    artist() {
-        return this._tracks[0].albumArtist();
-    }
+    artist() {return this._tracks[0].getColumn('%album artist%');}
 
-    artUrl() {
-        return this._tracks[0].artUrl();
-    }
+    artUrl() {return this._tracks[0].artUrl();}
 
-    albumId() {
-        return this._tracks[0].albumId();
-    }
+    albumId() {return this._tracks[0].albumId();}
 
-    tracks() {
-        return this._tracks;
-    }
+    tracks() {return this._tracks;}
 
     textColor() {
         return this._textColor || [255,255,255]; // White as the default because black is the default for the background
@@ -120,8 +93,10 @@ class Library {
     addPlaylistItems(playlistItems: components["schemas"]["PlaylistItemsResult"]) {
         console.log("building library");
         for (const item of playlistItems['items'] || []) {
-            const track = new Track(this.playlistId, item);
-            this.addTrack(track);
+            if (item?.columns) {
+                const track = new Track(this.playlistId, item.columns);
+                this.addTrack(track);
+            }
         }
     }
 
@@ -132,14 +107,6 @@ class Library {
         const album = this.albums[track.albumId()] || new Album();
         album.addTrack(track);
         this.albums[track.albumId()] = album;
-    }
-    
-    totalCount(): number {
-        return this.tracks.length;
-    }
-
-    columns(): Array<string> {
-        return ['%title%', '%artist%', '%album artist%', '%album%', '%track number%'];
     }
 }
 
@@ -245,7 +212,7 @@ function FoobarAlbumDetails({album, open, closing}: {album: Album, open: boolean
             onClick={() => {
                 play(track).then(console.log);
             }}
-        >{track.trackNumber()}. {track.title()}</li>)}
+        >{track.getColumn('%track number%')}. {track.getColumn('%title%')}</li>)}
         </ul>
     </div>
 }
