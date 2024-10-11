@@ -8,7 +8,7 @@ type AlbumId = string;
 
 export class Track {
     get index() {
-        return this.getColumn("%list_index%");
+        return parseInt(this.getColumn("%list_index%"));
     }
     private playlistId: string;
     private readonly columns: string[];
@@ -27,7 +27,7 @@ export class Track {
     }
 
     artUrl() {
-        return `http://localhost:8880/api/artwork/${this.playlistId}/${this.index}`;
+        return `http://localhost:8880/api/artwork/${this.playlistId}/${this.index - 1}`;
     }
 }
 
@@ -66,10 +66,21 @@ class Album {
 
     albumId() {return this._tracks[0].albumId();}
 
-    tracks() {return this._tracks;}
+    tracks() {
+        this._tracks.sort((a, b) =>
+            parseInt(a.getColumn("%track number%")) - parseInt(b.getColumn("%track number%"))
+        );
+        return this._tracks;
+    }
 
     textColor() {
         return this._textColor || [255,255,255]; // White as the default because black is the default for the background
+    }
+
+    get sortKey() {
+        const artist = this.artist().replace(/^(The |A )/, '');
+        const title = this.name().replace(/^(The |A )/, '');
+        return `${artist} - ${title}`;
     }
 }
 
@@ -99,6 +110,12 @@ class Library {
         const album = this.albums[track.albumId()] || new Album();
         album.addTrack(track);
         this.albums[track.albumId()] = album;
+    }
+
+    getAlbums() {
+        const albums = Object.values(this.albums);
+        albums.sort((a, b) => a.sortKey.localeCompare(b.sortKey));
+        return albums;
     }
 }
 
@@ -149,7 +166,7 @@ function AlbumsView({library}: {library: Library | null}) {
 
     if (library) {
         return <ul className={"library"}>
-            {Object.values(library.albums).map(album => FoobarAlbum({album, openAlbumId, toggleOpen, closingAlbumId}))}
+            {library.getAlbums().map(album => FoobarAlbum({album, openAlbumId, toggleOpen, closingAlbumId}))}
         </ul>
     } else {
         return 'Loading...';
@@ -159,7 +176,7 @@ function AlbumsView({library}: {library: Library | null}) {
 function FoobarAlbum({album, openAlbumId, toggleOpen, closingAlbumId}: {album: Album, openAlbumId: AlbumId|null, toggleOpen: (albumId: AlbumId|null) => void, closingAlbumId: AlbumId|null}) {
     const albumId = album.albumId();
     return <>
-        <li key={albumId} className={"library-album"}>
+        <li id={albumId} key={albumId} className={"library-album"}>
             <a onClick={() => toggleOpen(albumId)}>
             <img crossOrigin={"anonymous"} src={album.artUrl()} onLoad={(e) => {
                 if (album.bgColor[0] === 0) {

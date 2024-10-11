@@ -26,7 +26,7 @@ export function PlaybackControls() {
         <div style={{}}>
             <div id={"current-title"}>{playerState?.currentTrack?.getColumn("%title%")}</div>
             <div id={"current-artist"}>{playerState?.currentTrack?.getColumn("%artist%")}</div>
-            <div id={"current-album"}>{playerState?.currentTrack?.getColumn("%album%")}</div>
+            <a href={'#'+playerState?.currentTrack?.albumId()} id={"current-album"}>{playerState?.currentTrack?.getColumn("%album%")}</a>
         </div>
         <div style={{}}>
             <Playhead playerState={playerState}/>
@@ -76,7 +76,6 @@ function Playhead({playerState}: { playerState: PlayerState | undefined }) {
                                body: playerState.playerState.activeItem
                            });
                        }
-                       // setPosition(parseInt(e.target.value));
                    }}
             />
             <div>{`${position.display} / ${duration.display}`}</div>
