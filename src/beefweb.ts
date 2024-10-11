@@ -66,6 +66,10 @@ export class PlayerState {
     get activeItem() {
         return this.playerState.activeItem;
     }
+
+    get playbackState() {
+        return this.playerState?.playbackState || "stopped";
+    }
 }
 
 export class UpdateEventSource {

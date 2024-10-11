@@ -1,3 +1,8 @@
 #playhead {
-    width: 100%;
+    width: auto;
+    flex-grow: 1;
+}
+
+#playback-controls-buttons a:hover {
+    cursor: pointer;
 }
