@@ -209,15 +209,22 @@ function FoobarAlbumDetails({album, open, closing}: {album: Album, open: boolean
                 style = {{
                     backgroundColor: `rgb(${album.bgColor.join(',')})`,
                     color: `rgb(${album.textColor().join(',')})`,
-    }}
+                }}
     >
-        <ul>
-        {album.tracks().map(track => <li
-            key={track.index}
-            onClick={() => {
-                play(track).then(console.log);
-            }}
-        >{track.getColumn('%track number%')}. {track.getColumn('%title%')}</li>)}
-        </ul>
+        <div className={"album-details-inner"}>
+            <div style={{gridArea: "header"}}>
+                <div className={"album-title"}>{album.name()}</div>
+                <div className={"album-artist"}>{album.artist()}</div>
+            </div>
+            <img src={album.artUrl()} style={{gridArea: "art"}}/>
+            <ul style={{gridArea: "tracks"}}>
+                {album.tracks().map(track => <li
+                    key={track.index}
+                    onClick={() => {
+                        play(track).then(console.log);
+                    }}
+                >{track.getColumn('%track number%')}. {track.getColumn('%title%')}</li>)}
+            </ul>
+        </div>
     </div>
 }
