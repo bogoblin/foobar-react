@@ -233,7 +233,8 @@ function FoobarAlbumDetails({album, open, closing}: {album: Album, open: boolean
                     onClick={() => {
                         play(track).then(console.log);
                     }}
-                >{track.getColumn('%track number%')}. {track.getColumn('%title%')}</li>)}
+                    value={track.getColumn("%track number%")}
+                >{track.getColumn('%title%')}</li>)}
             </ul>
         </div>
     </div>

@@ -20,26 +20,26 @@
     img {
         transition: filter ease-out 0.2s;
     }
-}
 
-.library-album a {
-    color: inherit;
-}
-.library-album a:hover {
-    text-decoration-line: underline;
-    cursor: pointer;
-
-    img {
-        box-shadow: rgba(0,0,0,50%) 0 10px 20px;
-        filter: brightness(30%);
+    a {
+        color: inherit;
     }
-}
 
-.library-album img {
-    width: 100%;
-    aspect-ratio: 1;
-    content-visibility: auto;
-    box-shadow: rgba(0,0,0,50%) 0 5px 15px;
+    a:hover {
+        text-decoration-line: underline;
+        cursor: pointer;
+
+        img {
+            box-shadow: rgba(0,0,0,50%) 0 10px 20px;
+            filter: brightness(30%);
+        }
+    }
+    img {
+        width: 100%;
+        aspect-ratio: 1;
+        content-visibility: auto;
+        box-shadow: rgba(0,0,0,50%) 0 5px 15px;
+    }
 }
 
 .album-details {
@@ -48,42 +48,33 @@
     height: 0;
     display: none;
     margin: 0 -10px;
-}
 
-.album-details-inner {
-    display: grid;
-    grid-template-areas:
-        "header art"
-        "tracks art";
-    grid-template-rows: auto 1fr;
-    grid-template-columns: auto var(--album-details-open-size);
-    height: var(--album-details-open-size);
-}
+    img {
+        height: 100%;
+    }
+    .album-title {
+         font-size: xx-large;
+    }
+    .album-artist {
+        font-size: large;
+    }
 
-.album-details img {
-    height: 100%;
-}
+    ul {
+        backdrop-filter: blur(var(--album-details-open-size));
+        display: grid;
+        grid-auto-flow: column;
+        grid-template-rows: repeat(auto-fill, 1.5em);
+        grid-template-columns: repeat(10, auto);
+        column-gap: 4px;
+        width: auto;
+        overflow-x: scroll;
+        scrollbar-width: thin;
+        list-style-type: decimal;
+    }
 
-.album-details .album-title {
-    font-size: xx-large;
-}
-.album-details .album-artist {
-    font-size: large;
-}
-
-.album-details ul {
-    backdrop-filter: blur(var(--album-details-open-size));
-    display: grid;
-    grid-auto-flow: column;
-    grid-template-rows: repeat(auto-fill, 1.5em);
-    grid-template-columns: repeat(10, auto);
-    column-gap: 4px;
-    width: auto;
-    overflow-x: scroll;
-    scrollbar-width: thin;
-}
-.album-details li {
-    text-wrap: nowrap;
+    li {
+        text-wrap: nowrap;
+    }
 }
 
 .album-details.open {
@@ -96,6 +87,16 @@
     animation: collapse-album-details 0.3s ease-in-out forwards;
     height: var(--album-details-open-size);
     display: block;
+}
+
+.album-details-inner {
+    display: grid;
+    grid-template-areas:
+        "header art"
+        "tracks art";
+    grid-template-rows: auto 1fr;
+    grid-template-columns: auto var(--album-details-open-size);
+    height: var(--album-details-open-size);
 }
 
 .album-title {
