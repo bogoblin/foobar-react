@@ -8,7 +8,8 @@ type AlbumId = string;
 
 export class Track {
     get index() {
-        return parseInt(this.getColumn("%list_index%"));
+        // Foobar2000 uses 1 indexed but beefweb uses 0 index
+        return parseInt(this.getColumn("%list_index%")) - 1;
     }
     private playlistId: string;
     private readonly columns: string[];
@@ -27,7 +28,7 @@ export class Track {
     }
 
     artUrl() {
-        return `http://localhost:8880/api/artwork/${this.playlistId}/${this.index - 1}`;
+        return `http://localhost:8880/api/artwork/${this.playlistId}/${this.index}`;
     }
 }
 
