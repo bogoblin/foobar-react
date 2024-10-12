@@ -44,7 +44,7 @@
 
 .album-details {
     grid-column: 1 / -1;
-    overflow-y: hidden;
+    overflow: hidden;
     height: 0;
     display: none;
     margin: 0 -10px;
@@ -52,11 +52,30 @@
     img {
         height: 100%;
     }
-    .album-title {
-         font-size: xx-large;
-    }
-    .album-artist {
-        font-size: large;
+
+    .header {
+        margin: 5px 20px;
+        display: grid;
+        grid-template-areas:    "title year"
+                                "artist .";
+        grid-template-columns: 1fr auto;
+
+        .title {
+            grid-area: title;
+            font-size: larger;
+            font-weight: bold;
+        }
+        .artist {
+            grid-area: artist;
+            font-size: large;
+            font-style: italic;
+            opacity: 70%;
+        }
+        .year {
+            grid-area: year;
+            opacity: 50%;
+            font-style: italic;
+        }
     }
 
     ul {
@@ -69,11 +88,36 @@
         width: auto;
         overflow-x: scroll;
         scrollbar-width: thin;
-        list-style-type: decimal;
     }
 
     li {
         text-wrap: nowrap;
+        margin-right: 40px;
+        list-style-type: decimal;
+
+        .track {
+            display: flex;
+            flex-direction: row;
+        }
+
+        .play-song {
+            background: none;
+            padding: 0;
+            margin: 0;
+            visibility: hidden;
+            color: inherit;
+
+            &::after {
+                content: "|>";
+            }
+        }
+
+        &:hover {
+            .play-song {
+                visibility: visible;
+            }
+            list-style-type: circle;
+        }
     }
 }
 

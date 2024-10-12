@@ -63,6 +63,10 @@ class Album {
 
     artist() {return this._tracks[0].getColumn('%album artist%');}
 
+    year() {
+        return this._tracks[0].getColumn("$meta(Date)");
+    }
+
     artUrl() {return this._tracks[0].artUrl();}
 
     albumId() {return this._tracks[0].albumId();}
@@ -120,7 +124,7 @@ class Library {
     }
 }
 
-export const LibraryColumns = ['%title%', '%artist%', '%album artist%', '%album%', '%track number%', '%path%', '%_path_raw%', '%list_index%'] as const;
+export const LibraryColumns = ['%title%', '%artist%', '%album artist%', '%album%', '%track number%', '%path%', '%_path_raw%', '%list_index%', '$meta(Date)'] as const;
 
 export function FoobarLibrary({playlistId}: {playlistId: string}) {
     // TODO: move this so it doesn't get re run all the time:
@@ -222,19 +226,26 @@ function FoobarAlbumDetails({album, open, closing}: {album: Album, open: boolean
                 }}
     >
         <div className={"album-details-inner"}>
-            <div style={{gridArea: "header"}}>
-                <div className={"album-title"}>{album.name()}</div>
-                <div className={"album-artist"}>{album.artist()}</div>
+            <div className={"header"} style={{gridArea: "header"}}>
+                    <div className={"title"}>{album.name()}</div>
+                    <div className={"artist"}>{album.artist()}</div>
+                    <div className={"year"}>{album.year()}</div>
             </div>
             <img src={album.artUrl()} style={{gridArea: "art"}}/>
             <ul style={{gridArea: "tracks"}}>
                 {album.tracks().map(track => <li
                     key={track.index}
-                    onClick={() => {
-                        play(track).then(console.log);
-                    }}
+
                     value={track.getColumn("%track number%")}
-                >{track.getColumn('%title%')}</li>)}
+                >
+                    <span className={"track"}>
+                    <button className={"play-song"}
+                            onClick={() => {
+                                play(track).then(console.log);
+                            }}/>
+                    <span>{track.getColumn('%title%')}</span>
+                    </span>
+                </li>)}
             </ul>
         </div>
     </div>
