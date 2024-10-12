@@ -64,7 +64,7 @@ class Album {
     artist() {return this._tracks[0].getColumn('%album artist%');}
 
     year() {
-        return this._tracks[0].getColumn("$meta(Date)");
+        return this._tracks[0].getColumn("$year($meta(Date))");
     }
 
     artUrl() {return this._tracks[0].artUrl();}
@@ -124,7 +124,7 @@ class Library {
     }
 }
 
-export const LibraryColumns = ['%title%', '%artist%', '%album artist%', '%album%', '%track number%', '%path%', '%_path_raw%', '%list_index%', '$meta(Date)'] as const;
+export const LibraryColumns = ['%title%', '%artist%', '%album artist%', '%album%', '%track number%', '%path%', '%_path_raw%', '%list_index%', '$year($meta(Date))'] as const;
 
 export function FoobarLibrary({playlistId}: {playlistId: string}) {
     // TODO: move this so it doesn't get re run all the time:
@@ -209,7 +209,7 @@ function albumColors(element: HTMLImageElement): [number, number, number] {
     for (let y=0; y<imageData.height; y++) {
         for (let x=0; x<imageData.width; x++) {
             const index = (y*imageData.width+x)*4;
-            total[0] += imageData.data[index+0];
+            total[0] += imageData.data[index];
             total[1] += imageData.data[index+1];
             total[2] += imageData.data[index+2];
         }
