@@ -2,7 +2,6 @@ import {useState} from "react";
 import './foobarLibrary.css';
 import {$api, play} from "./beefweb.ts";
 import {components} from "./beefwebSchema";
-import {readImageDownsampling} from '@kotorik/palette';
 import {getContrastRatio, RGB} from "a11y-contrast-color";
 import {get_kmeans, JsCentroidData} from "kmeans-color-wasm";
 
@@ -85,8 +84,13 @@ class Album {
 
     calculateColors(image: HTMLImageElement) {
         if (this._bgColor) return;
-        const imgData = readImageDownsampling(image, 10000);
-        const result = get_kmeans(10, 20, 0.05, imgData.data).reverse();
+        const result = get_kmeans(image, {
+            color_space: "LAB",
+            converge: 0.05,
+            k: 8,
+            max_iter: 50,
+        });
+        result.sort((a, b) => b.percentage - a.percentage);
         const color0 = centroidToRgb(result[0]);
         const colors = result.map(c => {
             const color = centroidToRgb(c);
@@ -120,7 +124,7 @@ class Album {
 }
 
 function centroidToRgb(centroid: JsCentroidData) {
-    return [centroid.r * 255, centroid.g * 255, centroid.b * 255] as RGB;
+    return [...centroid.rgb] as RGB;
 }
 function rgbToString(rgb: RGB) {
     return `rgb(${rgb.join(',')})`;
