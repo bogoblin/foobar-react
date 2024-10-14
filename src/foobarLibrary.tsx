@@ -1,8 +1,10 @@
 import {useState} from "react";
 import './foobarLibrary.css';
-import fontColorContrast from "font-color-contrast";
 import {$api, play} from "./beefweb.ts";
 import {components} from "./beefwebSchema";
+import {readImageDownsampling} from '@kotorik/palette';
+import {getContrastRatio, RGB} from "a11y-contrast-color";
+import {get_kmeans, JsCentroidData} from "kmeans-color-wasm";
 
 type AlbumId = string;
 
@@ -33,23 +35,7 @@ export class Track {
 }
 
 class Album {
-    get bgColor(): [number, number, number] {
-        return this._bgColor || [0,0,0];
-    }
-
-    set bgColor(value: [number, number, number]) {
-        if (this._bgColor === null) {
-            this._bgColor = value;
-            if (fontColorContrast(...value) === '#000000') {
-                this._textColor = [0, 0, 0];
-            } else {
-                this._textColor = [255, 255, 255];
-            }
-        }
-    }
     private _tracks: Array<Track>;
-    private _bgColor: [number, number, number] | null = null;
-    private _textColor: [number, number, number] | null = null;
 
     constructor() {
         this._tracks = [];
@@ -78,8 +64,17 @@ class Album {
         return this._tracks;
     }
 
+    private _bgColor: string | undefined;
+    bgColor() {
+        return this._bgColor || 'black';
+    }
+    private _textColor: string | undefined;
     textColor() {
-        return this._textColor || [255,255,255]; // White as the default because black is the default for the background
+        return this._textColor || 'white';
+    }
+    private _accentColor: string | undefined;
+    accentColor() {
+        return this._accentColor || 'red';
     }
 
     get sortKey() {
@@ -87,6 +82,48 @@ class Album {
         const title = this.name().replace(/^(The |A )/, '');
         return `${artist} - ${title}`;
     }
+
+    calculateColors(image: HTMLImageElement) {
+        if (this._bgColor) return;
+        const imgData = readImageDownsampling(image, 10000);
+        const result = get_kmeans(10, 20, 0.05, imgData.data).reverse();
+        const color0 = centroidToRgb(result[0]);
+        const colors = result.map(c => {
+            const color = centroidToRgb(c);
+            return {
+                color,
+                contrast: getContrastRatio(color, color0)
+            }
+        });
+        this._bgColor = rgbToString(color0);
+
+        // We would prefer to use the most prominent colors, but we need to
+        // choose colors that have enough contrast so that you can read it.
+        for (let i=1; i<colors.length; i++) {
+            if (!this._textColor && colors[i].contrast > 4.5) {
+                this._textColor = rgbToString(colors[i].color);
+            }
+            else if (!this._accentColor && colors[i].contrast > 2) {
+                this._accentColor = rgbToString(colors[i].color);
+            }
+        }
+
+        // If we fall through, then just pick the color with the most contrast
+        colors.sort((a, b) => b.contrast - a.contrast);
+        if (!this._textColor) {
+            this._textColor = rgbToString(colors[1].color);
+        }
+        if (!this._accentColor) {
+            this._accentColor = rgbToString(colors[2].color);
+        }
+    }
+}
+
+function centroidToRgb(centroid: JsCentroidData) {
+    return [centroid.r * 255, centroid.g * 255, centroid.b * 255] as RGB;
+}
+function rgbToString(rgb: RGB) {
+    return `rgb(${rgb.join(',')})`;
 }
 
 class Library {
@@ -183,13 +220,11 @@ function FoobarAlbum({album, openAlbumId, toggleOpen, closingAlbumId}: {album: A
     return <>
         <li id={albumId} key={albumId} className={"library-album"}>
             <a onClick={() => toggleOpen(albumId)}>
-            <img crossOrigin={"anonymous"} src={album.artUrl()} onLoad={(e) => {
-                if (album.bgColor[0] === 0) {
-                    album.bgColor = albumColors(e.currentTarget);
-                }
-            }}/>
-            <div className={"album-title"}>{album.name()}</div>
-            <div className={"album-artist"}>{album.artist()}</div>
+                <img crossOrigin={"anonymous"} src={album.artUrl()} onLoad={(e) => {
+                    album.calculateColors(e.currentTarget);
+                }}/>
+                <div className={"album-title"}>{album.name()}</div>
+                <div className={"album-artist"}>{album.artist()}</div>
             </a>
         </li>
         {albumId === openAlbumId || albumId === closingAlbumId
@@ -199,34 +234,15 @@ function FoobarAlbum({album, openAlbumId, toggleOpen, closingAlbumId}: {album: A
     </>;
 }
 
-function albumColors(element: HTMLImageElement): [number, number, number] {
-    const canvas = document.createElement('canvas');
-    const ctx = canvas.getContext('2d');
-    if (!ctx) return [0,0,0];
-    ctx.drawImage(element, 0, 0, 16, 16);
-    const imageData = ctx.getImageData(0, 0, 16, 16);
-    const total = [0,0,0];
-    for (let y=0; y<imageData.height; y++) {
-        for (let x=0; x<imageData.width; x++) {
-            const index = (y*imageData.width+x)*4;
-            total[0] += imageData.data[index];
-            total[1] += imageData.data[index+1];
-            total[2] += imageData.data[index+2];
-        }
-    }
-    const [r,g,b] = total.map(v => Math.floor(v/(imageData.width*imageData.height)));
-    return [r,g,b];
-}
-
 function FoobarAlbumDetails({album, open, closing}: {album: Album, open: boolean, closing: boolean}) {
     return <div className={"album-details " + (open?'open':'') + (closing?'closing':'')}
                 style = {{
-                    backgroundColor: `rgb(${album.bgColor.join(',')})`,
-                    color: `rgb(${album.textColor().join(',')})`,
+                    backgroundColor: album.bgColor(),
+                    color: album.textColor(),
                 }}
     >
         <div className={"album-details-inner"}>
-            <div className={"header"} style={{gridArea: "header"}}>
+            <div className={"header"} style={{gridArea: "header", borderBottom: `${album.accentColor()} 1px solid`}}>
                     <div className={"title"}>{album.name()}</div>
                     <div className={"artist"}>{album.artist()}</div>
                     <div className={"year"}>{album.year()}</div>
