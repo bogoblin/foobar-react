@@ -16,6 +16,7 @@
     list-style-type: none;
     content-visibility: auto;
     padding: 20px 10px 10px;
+    overflow: visible;
 
     img {
         transition: filter ease-out 0.2s;
@@ -39,6 +40,32 @@
         content-visibility: auto;
         box-shadow: rgba(0,0,0,50%) 0 5px 15px;
     }
+
+    .triangle {
+        position: absolute;
+        width: 10px;
+        height: 10px;
+        bottom: -5px;
+        left: calc(50% - 5px);
+        transform: rotateZ(45deg);
+        &.open {
+            animation-delay: 0.3s;
+            animation: fade-in 0.3s ease-in-out forwards;
+        }
+        &.closing {
+            animation-delay: 0.3s;
+            animation: fade-out 0.3s ease-in-out forwards;
+        }
+    }
+}
+
+@keyframes fade-in {
+    0% { opacity: 0 }
+    100% { opacity: 100% }
+}
+@keyframes fade-out {
+    0% { opacity: 100% }
+    100% { opacity: 0 }
 }
 
 .album-details {

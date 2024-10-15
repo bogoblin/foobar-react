@@ -3,7 +3,7 @@ import './foobarLibrary.css';
 import {$api, play} from "./beefweb.ts";
 import {components} from "./beefwebSchema";
 import {getContrastRatio, RGB} from "a11y-contrast-color";
-import {get_kmeans, JsCentroidData} from "kmeans-color-wasm";
+import {get_kmeans, Centroid} from "kmeans-color-wasm";
 
 type AlbumId = string;
 
@@ -87,7 +87,7 @@ class Album {
         const result = get_kmeans(image, {
             color_space: "LAB",
             converge: 0.05,
-            k: 8,
+            k: 5,
             max_iter: 50,
         });
         result.sort((a, b) => b.percentage - a.percentage);
@@ -123,7 +123,7 @@ class Album {
     }
 }
 
-function centroidToRgb(centroid: JsCentroidData) {
+function centroidToRgb(centroid: Centroid) {
     return [...centroid.rgb] as RGB;
 }
 function rgbToString(rgb: RGB) {
@@ -221,6 +221,7 @@ function AlbumsView({library}: {library: Library | null}) {
 
 function FoobarAlbum({album, openAlbumId, toggleOpen, closingAlbumId}: {album: Album, openAlbumId: AlbumId|null, toggleOpen: (albumId: AlbumId|null) => void, closingAlbumId: AlbumId|null}) {
     const albumId = album.albumId();
+    const detailsOpen = albumId === openAlbumId || albumId === closingAlbumId;
     return <>
         <li id={albumId} key={albumId} className={"library-album"}>
             <a onClick={() => toggleOpen(albumId)}>
@@ -230,8 +231,9 @@ function FoobarAlbum({album, openAlbumId, toggleOpen, closingAlbumId}: {album: A
                 <div className={"album-title"}>{album.name()}</div>
                 <div className={"album-artist"}>{album.artist()}</div>
             </a>
+            {detailsOpen ? <div style={{backgroundColor: album.bgColor()}} className={albumId === openAlbumId ? 'triangle open' : 'triangle closing'}/> : ''}
         </li>
-        {albumId === openAlbumId || albumId === closingAlbumId
+        {detailsOpen
             ? <FoobarAlbumDetails key={`${albumId}-details`} album={album} open={albumId === openAlbumId} closing={albumId === closingAlbumId}/>
             : <></>
         }
