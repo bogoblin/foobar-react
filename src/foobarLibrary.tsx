@@ -31,6 +31,10 @@ export class Track {
     artUrl() {
         return `http://localhost:8880/api/artwork/${this.playlistId}/${this.index}`;
     }
+
+    audioSrc() {
+        return this.getColumn("%_path_raw%").replace(/\\/g, '/').replace(/^.*\/Music/, '');
+    }
 }
 
 class Album {
